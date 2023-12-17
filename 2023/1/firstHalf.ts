@@ -1,7 +1,5 @@
 import { INPUT } from "./input";
 
-console.log("fuck")
-
 const isNumber = (str: string) => {
     if (typeof str != "string") return false // we only process strings!  
     return !isNaN(Number(str)) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
