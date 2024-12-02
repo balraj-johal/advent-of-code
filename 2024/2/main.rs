@@ -26,11 +26,11 @@ fn check_pair(ascending: &mut bool, descending: &mut bool, current: &i32, next: 
     return false;
 }
 
-fn check_report_safety(report: &Vec<i32>) -> bool {
+fn check_report_safety(report: &Vec<i32>, override_has_tolerance: bool) -> bool {
     let mut ascending: bool = false;
     let mut descending: bool = false;
     let mut is_unsafe: bool = false;
-    let mut has_tolerance: bool = true;
+    let mut has_tolerance: bool = override_has_tolerance.clone();
 
     let length: usize = report.len();
     let mut index: usize = 0;
@@ -38,6 +38,9 @@ fn check_report_safety(report: &Vec<i32>) -> bool {
     while index < length - 1 {
         let current: i32 = report[index];
         let next: i32 = report[index + 1];
+
+        let cloned_ascending: bool = ascending.clone();
+        let cloned_descending: bool = descending.clone();
 
         let pair_safe: bool = !check_pair(&mut ascending, &mut descending, &current, &next);
 
@@ -49,9 +52,41 @@ fn check_report_safety(report: &Vec<i32>) -> bool {
 
         if !has_tolerance {
             is_unsafe = true;
+            println!(
+                "pair {:?}, {:?} is not safe, no tolerance left",
+                &current, &next
+            );
 
             index += 1;
             continue;
+        }
+
+        ascending = cloned_ascending;
+        descending = cloned_descending;
+
+        if index == 0 {
+            let new_current: &i32 = &report[index + 1];
+            let new_next: &i32 = &report[index + 2];
+            let next_pair_safe: bool =
+                !check_pair(&mut ascending, &mut descending, &new_current, &new_next);
+
+            if next_pair_safe {
+                println!(
+                    "pair {:?}, {:?} is safe, no more tolerance",
+                    &current, &new_next
+                );
+                has_tolerance = false;
+                is_unsafe = false;
+
+                index += 1;
+                continue;
+            } else {
+                println!(
+                    "pair {:?}, {:?} is not safe after skip",
+                    &current, &new_next
+                );
+                is_unsafe = true;
+            }
         }
 
         if index + 2 < length {
@@ -60,13 +95,21 @@ fn check_report_safety(report: &Vec<i32>) -> bool {
                 !check_pair(&mut ascending, &mut descending, &current, &new_next);
 
             if next_pair_safe {
-                println!("pair {:?}, {:?} is safe", &current, &new_next);
+                println!(
+                    "pair {:?}, {:?} is safe, no more tolerance",
+                    &current, &new_next
+                );
                 has_tolerance = false;
                 is_unsafe = false;
             } else {
-                println!("pair {:?}, {:?} is not safe", &current, &new_next);
+                println!(
+                    "pair {:?}, {:?} is not safe after skip",
+                    &current, &new_next
+                );
                 is_unsafe = true;
             }
+
+            index += 1;
         }
 
         index += 1;
@@ -104,13 +147,11 @@ fn main() {
 
     let number_of_reports: usize = reports.len();
 
-    // for report in reports {
-    //     if check_report_safety(&report) {
-    //         unsafe_report_count += 1;
-    //     }
-    // }
+    for report in reports {
+        if check_report_safety(&report, true) {
+            unsafe_report_count += 1;
+        }
+    }
 
-    check_report_safety(&reports[3]);
-
-    // println!("{:#?}", number_of_reports - unsafe_report_count);
+    println!("{:#?}", number_of_reports - unsafe_report_count);
 }
