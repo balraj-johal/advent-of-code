@@ -61,12 +61,13 @@ fn check_report_safety(report: &Vec<i32>, override_has_tolerance: bool) -> bool 
             continue;
         }
 
-        ascending = cloned_ascending;
-        descending = cloned_descending;
-
         if index == 0 {
             let new_current: &i32 = &report[index + 1];
             let new_next: &i32 = &report[index + 2];
+
+            ascending = cloned_ascending;
+            descending = cloned_descending;
+
             let next_pair_safe: bool =
                 !check_pair(&mut ascending, &mut descending, &new_current, &new_next);
 
@@ -88,6 +89,9 @@ fn check_report_safety(report: &Vec<i32>, override_has_tolerance: bool) -> bool 
                 is_unsafe = true;
             }
         }
+
+        ascending = cloned_ascending;
+        descending = cloned_descending;
 
         if index + 2 < length {
             let new_next: &i32 = &report[index + 2];
@@ -123,7 +127,7 @@ fn check_report_safety(report: &Vec<i32>, override_has_tolerance: bool) -> bool 
 
 fn main() {
     let loaded_input: String =
-        fs::read_to_string("test.txt").expect("Should have been able to read the file");
+        fs::read_to_string("input.txt").expect("Should have been able to read the file");
 
     let mut reports: Vec<Vec<i32>> = Vec::new();
     let mut unsafe_report_count: usize = 0;
