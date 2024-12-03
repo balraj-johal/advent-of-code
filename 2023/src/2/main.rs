@@ -1,11 +1,11 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 const ID_START_OFFSET: usize = 5;
 
 fn get_valid_state() -> HashMap<String, i16> {
     let mut valid_state = HashMap::new();
-    
+
     valid_state.insert("red".to_string(), 12);
     valid_state.insert("green".to_string(), 13);
     valid_state.insert("blue".to_string(), 14);
@@ -59,8 +59,7 @@ fn check_game_validity(game: String, valid_state: &HashMap<String, i16>) -> bool
 }
 
 fn main() {
-    let input = fs::read_to_string("input.txt")
-        .expect("Should have been able to read the file");
+    let input = fs::read_to_string("input.txt").expect("Should have been able to read the file");
     let games = input.lines();
     let valid_state = get_valid_state();
 
@@ -77,10 +76,10 @@ fn main() {
             valid_game_ids.push(game_id);
         }
     }
-    
+
     for id in valid_game_ids {
         sum_of_ids = &sum_of_ids + id;
     }
-    
+
     println!("{}", sum_of_ids);
 }

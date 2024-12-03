@@ -65,8 +65,8 @@ fn check_report_safety(report: &Vec<i32>, override_has_tolerance: bool) -> bool 
             let new_current: &i32 = &report[index + 1];
             let new_next: &i32 = &report[index + 2];
 
-            ascending = cloned_ascending;
-            descending = cloned_descending;
+            ascending = false;
+            descending = false;
 
             let next_pair_safe: bool =
                 !check_pair(&mut ascending, &mut descending, &new_current, &new_next);
@@ -87,6 +87,8 @@ fn check_report_safety(report: &Vec<i32>, override_has_tolerance: bool) -> bool 
                     &current, &new_next
                 );
                 is_unsafe = true;
+                index += 1;
+                continue;
             }
         }
 
