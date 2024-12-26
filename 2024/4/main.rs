@@ -21,7 +21,7 @@ const REQUIRED_LETTERS: [&str; 3] = ["M", "A", "S"];
 
 fn get_processed_letters() -> ProcessedLetters {
     let input_raw: String =
-        fs::read_to_string("test.txt").expect("Should have been able to read the file");
+        fs::read_to_string("input.txt").expect("Should have been able to read the file");
     let input = input_raw.as_str();
     let lines = input.lines();
     let num_rows: i32 = i32::try_from(input.lines().count()).unwrap();
