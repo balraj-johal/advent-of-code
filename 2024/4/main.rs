@@ -17,9 +17,11 @@ struct ProcessedLetters {
     num_rows: i32,
 }
 
+const REQUIRED_LETTERS: [&str; 3] = ["M", "A", "S"];
+
 fn get_processed_letters() -> ProcessedLetters {
     let input_raw: String =
-        fs::read_to_string("input.txt").expect("Should have been able to read the file");
+        fs::read_to_string("test.txt").expect("Should have been able to read the file");
     let input = input_raw.as_str();
     let lines = input.lines();
     let num_rows: i32 = i32::try_from(input.lines().count()).unwrap();
@@ -68,11 +70,8 @@ fn does_letter_match(
     required_letter: &str,
 ) -> bool {
     let key: String = get_letter_key(column, row);
-    println!("{key}");
     match letters.get(&key) {
         Some(value) => {
-            println!("checking {} against {}", value.letter, required_letter);
-
             return value.letter == required_letter;
         }
         None => {
@@ -81,17 +80,18 @@ fn does_letter_match(
     }
 }
 
-fn horizontal_linear_matches(
+fn generic_matches(
     letters: &HashMap<String, Letter>,
     target: &Letter,
-    offsets: Vec<i32>,
+    row_offsets: Vec<i32>,
+    column_offsets: Vec<i32>,
 ) -> i32 {
     let mut does_match: bool = true;
-    let required = vec!["M", "A", "S"];
 
-    for test in offsets.iter().zip(required.iter()) {
-        let offset = test.0;
-        let required_letter = test.1;
+    for index in 0..3 {
+        let row_offset = row_offsets[index];
+        let column_offset = column_offsets[index];
+        let required_letter = REQUIRED_LETTERS[index];
 
         if does_match == false {
             break;
@@ -99,141 +99,37 @@ fn horizontal_linear_matches(
 
         does_match = does_letter_match(
             letters,
-            target.column_index + offset,
-            target.row_index,
+            target.column_index - column_offset,
+            target.row_index - row_offset,
             required_letter,
         );
     }
 
     if does_match {
-        println!("Match!");
         return 1;
     }
 
-    println!("No match!");
     return 0;
 }
 
-fn vertical_linear_matches(
-    letters: &HashMap<String, Letter>,
-    target: &Letter,
-    offsets: Vec<i32>,
-) -> i32 {
-    let mut does_match: bool = true;
-    let required = vec!["M", "A", "S"];
-
-    for test in offsets.iter().zip(required.iter()) {
-        let offset = test.0;
-        let required_letter = test.1;
-
-        if does_match == false {
-            break;
-        }
-
-        does_match = does_letter_match(
-            letters,
-            target.column_index,
-            target.row_index + offset,
-            required_letter,
-        );
-    }
-
-    if does_match {
-        println!("Match!");
-        return 1;
-    }
-
-    println!("No match!");
-    return 0;
-}
-
-fn diagonal_forward_matches(
-    letters: &HashMap<String, Letter>,
-    target: &Letter,
-    offsets: Vec<i32>,
-) -> i32 {
-    let mut does_match: bool = true;
-    let required = vec!["M", "A", "S"];
-
-    for test in offsets.iter().zip(required.iter()) {
-        let offset = test.0;
-        let required_letter = test.1;
-
-        if does_match == false {
-            break;
-        }
-
-        does_match = does_letter_match(
-            letters,
-            target.column_index + offset,
-            target.row_index + offset,
-            required_letter,
-        );
-    }
-
-    if does_match {
-        println!("Match!");
-        return 1;
-    }
-
-    println!("No match!");
-    return 0;
-}
-
-fn diagonal_backward_matches(
-    letters: &HashMap<String, Letter>,
-    target: &Letter,
-    offsets: Vec<i32>,
-) -> i32 {
-    let mut does_match: bool = true;
-    let required = vec!["M", "A", "S"];
-
-    for test in offsets.iter().zip(required.iter()) {
-        let offset = test.0;
-        let required_letter = test.1;
-
-        if does_match == false {
-            break;
-        }
-
-        does_match = does_letter_match(
-            letters,
-            target.column_index - offset,
-            target.row_index - offset,
-            required_letter,
-        );
-    }
-
-    if does_match {
-        println!("Match!");
-        return 1;
-    }
-
-    println!("No match!");
-    return 0;
-}
-
-fn matches(
-    letters: &HashMap<String, Letter>,
-    target: &Letter,
-    num_columns: &i32,
-    num_rows: &i32,
-) -> i32 {
+fn matches(letters: &HashMap<String, Letter>, target: &Letter) -> i32 {
     let mut total_matches: i32 = 0;
 
-    // if target.column_index + 3 < *num_columns - 1 {
-    //     total_matches += horizontal_forward_matches(&letters, target);
-    // }
-    total_matches += horizontal_linear_matches(&letters, target, vec![1, 2, 3]);
-    total_matches += horizontal_linear_matches(&letters, target, vec![-1, -2, -3]);
+    // horizontal forward backward
+    total_matches += generic_matches(&letters, target, vec![0, 0, 0], vec![1, 2, 3]);
+    total_matches += generic_matches(&letters, target, vec![0, 0, 0], vec![-1, -2, -3]);
 
-    total_matches += vertical_linear_matches(&letters, target, vec![1, 2, 3]);
-    total_matches += vertical_linear_matches(&letters, target, vec![-1, -2, -3]);
+    // vertical forward backward
+    total_matches += generic_matches(&letters, target, vec![1, 2, 3], vec![0, 0, 0]);
+    total_matches += generic_matches(&letters, target, vec![-1, -2, -3], vec![0, 0, 0]);
 
-    total_matches += diagonal_forward_matches(&letters, target, vec![1, 2, 3]);
-    total_matches += diagonal_forward_matches(&letters, target, vec![-1, -2, -3]);
-    total_matches += diagonal_backward_matches(&letters, target, vec![1, 2, 3]);
-    total_matches += diagonal_backward_matches(&letters, target, vec![-1, -2, -3]);
+    // diagonal forward up/down
+    total_matches += generic_matches(&letters, target, vec![1, 2, 3], vec![1, 2, 3]);
+    total_matches += generic_matches(&letters, target, vec![-1, -2, -3], vec![1, 2, 3]);
+
+    // diagonal backwards up/down
+    total_matches += generic_matches(&letters, target, vec![1, 2, 3], vec![-1, -2, -3]);
+    total_matches += generic_matches(&letters, target, vec![-1, -2, -3], vec![-1, -2, -3]);
 
     return total_matches;
 }
@@ -252,13 +148,9 @@ fn main() {
                 continue;
             }
 
-            num_matches += matches(
-                &letters,
-                letter,
-                &processed.num_columns,
-                &processed.num_rows,
-            );
+            num_matches += matches(&letters, letter);
         }
     }
+
     println!("{}", num_matches);
 }
